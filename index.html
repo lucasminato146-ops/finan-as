@@ -6,6 +6,7 @@
     <title>CoinKeeper - Nova Estética</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+
     <style>
         /* Glass effect */
         .glass {
@@ -24,8 +25,10 @@
         }
     </style>
 </head>
+
 <body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 min-h-screen">
 
+    <!-- NAVBAR -->
     <custom-navbar></custom-navbar>
 
     <main class="container mx-auto px-4 py-10 fade">
@@ -38,15 +41,18 @@
                         <h2 class="text-2xl font-bold">Resumo do Mês</h2>
                         <i data-feather="bar-chart-2" class="text-indigo-400"></i>
                     </div>
+
                     <div class="space-y-4">
                         <div class="flex justify-between">
                             <span class="text-gray-400">Receitas</span>
                             <span id="total-income" class="text-green-400 font-semibold">R$ 0,00</span>
                         </div>
+
                         <div class="flex justify-between">
                             <span class="text-gray-400">Despesas</span>
                             <span id="total-expense" class="text-red-400 font-semibold">R$ 0,00</span>
                         </div>
+
                         <div class="border-t border-gray-700 pt-3 mt-3">
                             <div class="flex justify-between">
                                 <span class="font-medium">Saldo</span>
@@ -76,6 +82,7 @@
                                 <label class="block text-gray-400 mb-1">Data</label>
                                 <input id="date" type="date" required class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
                             </div>
+
                             <div>
                                 <label class="block text-gray-400 mb-1">Categoria</label>
                                 <select id="category" class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none">
@@ -95,6 +102,7 @@
                             <button id="income-btn" type="button" class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl transition font-semibold">
                                 <i data-feather="plus" class="inline-flex mr-1"></i> Receita
                             </button>
+
                             <button id="expense-btn" type="button" class="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl transition font-semibold">
                                 <i data-feather="minus" class="inline-flex mr-1"></i> Despesa
                             </button>
@@ -106,8 +114,10 @@
             <!-- Lista de transações -->
             <div class="lg:col-span-2">
                 <div class="glass rounded-2xl p-6 shadow-xl">
+
                     <div class="flex items-center justify-between mb-6">
                         <h2 class="text-2xl font-bold">Transações Recentes</h2>
+
                         <div class="flex space-x-2">
                             <button id="day-filter" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm transition">Hoje</button>
                             <button id="month-filter" class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Este Mês</button>
@@ -126,23 +136,31 @@
                                     <th class="pb-3 text-right">Ações</th>
                                 </tr>
                             </thead>
+
                             <tbody id="transactions-list" class="divide-y divide-gray-700"></tbody>
                         </table>
                     </div>
+
                 </div>
             </div>
 
         </div>
     </main>
 
+    <!-- FOOTER -->
     <custom-footer></custom-footer>
 
+    <!-- COMPONENTS -->
     <script src="components/navbar.js"></script>
     <script src="components/footer.js"></script>
+
+    <!-- SCRIPT PRINCIPAL -->
     <script src="script.js"></script>
+
     <script>
         feather.replace();
         document.getElementById("date").valueAsDate = new Date();
     </script>
+
 </body>
 </html>
