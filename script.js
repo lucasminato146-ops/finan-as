@@ -13,6 +13,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let userId = null;
     let transactions = [];
 
+    // Inputs do formulário
+    const description = document.getElementById("description");
+    const amountInput = document.getElementById("amount");
+    const dateInput = document.getElementById("date");
+    const categoryInput = document.getElementById("category");
+
     const list = document.getElementById("transactions-list");
     const incomeBtn = document.getElementById("income-btn");
     const expenseBtn = document.getElementById("expense-btn");
@@ -43,10 +49,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const desc = description.value;
+        const desc = description.value.trim();
         const amount = parseFloat(amountInput.value);
         const date = dateInput.value;
         const category = categoryInput.value;
+
+        if (!desc || isNaN(amount) || !date || !category) {
+            alert("Preencha todos os campos corretamente!");
+            return;
+        }
 
         await addDoc(collection(db, "transactions"), {
             userId,
@@ -57,6 +68,12 @@ document.addEventListener("DOMContentLoaded", () => {
             type
         });
 
+        // Limpa formulário
+        description.value = "";
+        amountInput.value = "";
+        dateInput.valueAsDate = new Date();
+        categoryInput.value = "food";
+
         loadTransactions();
     }
 
@@ -65,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await deleteDoc(doc(db, "transactions", id));
         loadTransactions();
     }
-    window.deleteTransaction = deleteTransaction;
+    window.deleteTransaction = deleteTransaction; // necessário para onclick inline
 
     // Renderizar lista
     function render() {
@@ -89,12 +106,16 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
+        // Atualiza Feather icons
         feather.replace();
     }
 
     // Botões
     incomeBtn.onclick = () => addTransaction("income");
     expenseBtn.onclick = () => addTransaction("expense");
+
+    // Inicializa a data como hoje
+    dateInput.valueAsDate = new Date();
 
     // Observar login
     auth.onAuthStateChanged(user => {
