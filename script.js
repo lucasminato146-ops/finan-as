@@ -1,16 +1,19 @@
-import { db } from "./firebase.js"; // removi auth temporariamente para teste
+import { db, auth } from "./firebase.js";
 import {
     collection,
     addDoc,
     getDocs,
     deleteDoc,
-    doc
+    doc,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    let userId = null;
     let transactions = [];
 
-    // Inputs do formulário
+    // Inputs
     const description = document.getElementById("description");
     const amountInput = document.getElementById("amount");
     const dateInput = document.getElementById("date");
@@ -24,28 +27,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalExpenseEl = document.getElementById("total-expense");
     const totalBalanceEl = document.getElementById("total-balance");
 
-    // Inicializa data como hoje
+    // Inicializa data
     dateInput.valueAsDate = new Date();
 
-    // Carregar transações do Firestore
+    // Carregar transações
     async function loadTransactions() {
+        if (!userId) return;
+
         try {
-            const snap = await getDocs(collection(db, "transactions"));
+            const q = query(
+                collection(db, "transactions"),
+                where("userId", "==", userId)
+            );
 
-            transactions = snap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
+            const snap = await getDocs(q);
+            transactions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             render();
             updateTotals();
-        } catch (error) {
-            console.error("Erro ao carregar transações:", error);
+        } catch (err) {
+            console.error(err);
         }
     }
 
     // Adicionar transação
     async function addTransaction(type) {
+        if (!userId) {
+            alert("Você precisa estar logado!");
+            return;
+        }
+
         const desc = description.value.trim();
         const amount = parseFloat(amountInput.value);
         const date = dateInput.value;
@@ -58,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             await addDoc(collection(db, "transactions"), {
+                userId,
                 desc,
                 amount,
                 category,
@@ -65,15 +76,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 type
             });
 
-            // Limpa formulário
             description.value = "";
             amountInput.value = "";
             dateInput.valueAsDate = new Date();
             categoryInput.value = "food";
 
             loadTransactions();
-        } catch (error) {
-            console.error("Erro ao adicionar transação:", error);
+        } catch (err) {
+            console.error(err);
         }
     }
 
@@ -82,23 +92,22 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             await deleteDoc(doc(db, "transactions", id));
             loadTransactions();
-        } catch (error) {
-            console.error("Erro ao excluir transação:", error);
+        } catch (err) {
+            console.error(err);
         }
     }
-    window.deleteTransaction = deleteTransaction; // necessário para onclick inline
+    window.deleteTransaction = deleteTransaction;
 
     // Renderizar lista
     function render() {
         list.innerHTML = "";
-
         for (const t of transactions) {
             list.innerHTML += `
                 <tr>
                     <td>${t.desc}</td>
                     <td>${t.category}</td>
                     <td>${t.date}</td>
-                    <td class="text-right ${t.type == "income" ? "text-green-400" : "text-red-400"}">
+                    <td class="text-right ${t.type === "income" ? "text-green-400" : "text-red-400"}">
                         R$ ${t.amount.toFixed(2)}
                     </td>
                     <td class="text-right">
@@ -109,36 +118,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 </tr>
             `;
         }
-
         if (window.feather) feather.replace();
     }
 
     // Atualizar totais
     function updateTotals() {
-        let income = 0;
-        let expense = 0;
-
-        for (const t of transactions) {
+        let income = 0, expense = 0;
+        transactions.forEach(t => {
             if (t.type === "income") income += t.amount;
             else if (t.type === "expense") expense += t.amount;
-        }
-
+        });
         totalIncomeEl.textContent = `R$ ${income.toFixed(2)}`;
         totalExpenseEl.textContent = `R$ ${expense.toFixed(2)}`;
         totalBalanceEl.textContent = `R$ ${(income - expense).toFixed(2)}`;
     }
 
     // Botões
-    incomeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        addTransaction("income");
-    });
+    incomeBtn.addEventListener("click", () => addTransaction("income"));
+    expenseBtn.addEventListener("click", () => addTransaction("expense"));
 
-    expenseBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        addTransaction("expense");
+    // Observa login
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            userId = user.uid;
+            loadTransactions();
+        } else {
+            userId = null;
+            transactions = [];
+            render();
+            updateTotals();
+        }
     });
-
-    // Inicializa
-    loadTransactions();
 });
