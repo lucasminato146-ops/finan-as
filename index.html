@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CoinKeeper - Nova Estética</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
@@ -19,6 +23,7 @@
         .fade {
             animation: fadeIn 0.6s ease;
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -69,23 +74,27 @@
                     <form id="transaction-form" class="space-y-4">
                         <div>
                             <label class="block text-gray-400 mb-1">Descrição</label>
-                            <input id="description" type="text" required class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
+                            <input id="description" type="text" required
+                                class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
                         </div>
 
                         <div>
                             <label class="block text-gray-400 mb-1">Valor (R$)</label>
-                            <input id="amount" type="number" step="0.01" required class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
+                            <input id="amount" type="number" step="0.01" required
+                                class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-gray-400 mb-1">Data</label>
-                                <input id="date" type="date" required class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
+                                <input id="date" type="date" required
+                                    class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
                             </div>
 
                             <div>
                                 <label class="block text-gray-400 mb-1">Categoria</label>
-                                <select id="category" class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none">
+                                <select id="category"
+                                    class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none">
                                     <option value="food">Alimentação</option>
                                     <option value="transport">Transporte</option>
                                     <option value="housing">Moradia</option>
@@ -99,11 +108,13 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <button id="income-btn" type="button" class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl transition font-semibold">
+                            <button id="income-btn" type="button"
+                                class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl transition font-semibold">
                                 <i data-feather="plus" class="inline-flex mr-1"></i> Receita
                             </button>
 
-                            <button id="expense-btn" type="button" class="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl transition font-semibold">
+                            <button id="expense-btn" type="button"
+                                class="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl transition font-semibold">
                                 <i data-feather="minus" class="inline-flex mr-1"></i> Despesa
                             </button>
                         </div>
@@ -119,9 +130,13 @@
                         <h2 class="text-2xl font-bold">Transações Recentes</h2>
 
                         <div class="flex space-x-2">
-                            <button id="day-filter" class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm transition">Hoje</button>
-                            <button id="month-filter" class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Este Mês</button>
-                            <button id="all-filter" class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Todas</button>
+                            <button id="day-filter"
+                                class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm transition">Hoje</button>
+                            <button id="month-filter"
+                                class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Este
+                                Mês</button>
+                            <button id="all-filter"
+                                class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Todas</button>
                         </div>
                     </div>
 
@@ -157,9 +172,16 @@
     <!-- SCRIPT PRINCIPAL -->
     <script src="script.js"></script>
 
+    <!-- Inicialização -->
     <script>
-        feather.replace();
-        document.getElementById("date").valueAsDate = new Date();
+        window.addEventListener("DOMContentLoaded", () => {
+            // Feather Icons
+            if (window.feather) feather.replace();
+
+            // Data do input
+            const dateInput = document.getElementById("date");
+            if (dateInput) dateInput.valueAsDate = new Date();
+        });
     </script>
 
 </body>
