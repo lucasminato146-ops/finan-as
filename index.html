@@ -49,7 +49,7 @@
 
                     <div class="space-y-4">
                         <div class="flex justify-between">
-                            <span class="text-gray-400">ganhos</span>
+                            <span class="text-gray-400">Ganhos</span>
                             <span id="total-income" class="text-green-400 font-semibold">R$ 0,00</span>
                         </div>
 
@@ -170,20 +170,7 @@
     <script src="components/footer.js"></script>
 
     <!-- SCRIPT PRINCIPAL -->
-    <script src="script.js"></script>
-
-    <!-- Inicialização -->
-    <script>
-        window.addEventListener("DOMContentLoaded", () => {
-            // Feather Icons
-            if (window.feather) feather.replace();
-
-            // Data do input
-            const dateInput = document.getElementById("date");
-            if (dateInput) dateInput.valueAsDate = new Date();
-        });
-    </script>
+    <script type="module" src="script.js"></script>
 
 </body>
 </html>
-
