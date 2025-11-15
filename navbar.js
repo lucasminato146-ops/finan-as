@@ -1,5 +1,6 @@
 // components/navbar.js
-// Este arquivo é um ES module — seu index.html deve carregá-lo com: <script type="module" src="components/navbar.js"></script>
+// Este arquivo é um ES module — deve ser carregado com:
+// <script type="module" src="components/navbar.js"></script>
 
 import { auth } from "../firebase.js";
 import {
@@ -22,10 +23,8 @@ class CustomNavbar extends HTMLElement {
       <header class="bg-gray-900 border-b border-gray-800">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <!-- logo: ícone + texto -->
-            <div class="w-10 h-10 rounded flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold">
-              CK
-            </div>
+            <!-- logo -->
+            <div class="w-10 h-10 rounded flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold">CK</div>
             <div class="text-white font-bold text-lg">CoinKeeper</div>
           </div>
 
@@ -37,9 +36,10 @@ class CustomNavbar extends HTMLElement {
           <!-- auth area -->
           <div id="auth-area" class="flex items-center gap-3">
             <button id="login-open-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded hidden md:inline-block">Entrar</button>
-            <!-- when logged: user email + logout button will replace above -->
             <button id="mobile-menu-btn" class="md:hidden text-gray-200 p-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -53,7 +53,7 @@ class CustomNavbar extends HTMLElement {
         </div>
       </header>
 
-      <!-- Auth Modal (login/register) -->
+      <!-- Auth Modal -->
       <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
         <div class="bg-gray-800 rounded-xl p-6 w-80 shadow-lg">
           <h3 class="text-xl font-bold mb-4 text-white" id="auth-modal-title">Entrar</h3>
@@ -92,17 +92,14 @@ class CustomNavbar extends HTMLElement {
   }
 
   bind() {
-    // open modal
     if (this.loginOpenBtn) this.loginOpenBtn.addEventListener("click", () => this.openModal());
     if (this.mobileMenuBtn) this.mobileMenuBtn.addEventListener("click", () => this.toggleMobileMenu());
-
-    // modal buttons
     this.authLoginBtn.addEventListener("click", () => this.login());
     this.authRegisterBtn.addEventListener("click", () => this.register());
     this.authClose.addEventListener("click", () => this.closeModal());
 
-    // close modal by clicking overlay
-    this.authModal.addEventListener("click", (e) => {
+    // fechar modal clicando no overlay
+    this.authModal.addEventListener("click", e => {
       if (e.target === this.authModal) this.closeModal();
     });
   }
@@ -158,7 +155,6 @@ class CustomNavbar extends HTMLElement {
   observeAuth() {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // mostra email + botão logout
         this.authArea.innerHTML = `
           <span class="hidden md:inline-block text-sm text-gray-200 mr-3">${user.email}</span>
           <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded">Sair</button>
@@ -170,10 +166,9 @@ class CustomNavbar extends HTMLElement {
         if (logoutBtn) logoutBtn.onclick = () => signOut(auth);
         if (mobileLogout) mobileLogout.onclick = () => signOut(auth);
       } else {
-        // mostra botão entrar
         this.authArea.innerHTML = `<button id="login-open-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded hidden md:inline-block">Entrar</button>`;
         this.mobileAuthArea.innerHTML = `<button id="mobile-login" class="w-full bg-indigo-600 py-2 rounded text-white">Entrar</button>`;
-        // rebind events because we replaced innerHTML
+
         const mobileLogin = this.querySelector("#mobile-login");
         const loginOpen = this.querySelector("#login-open-btn");
         if (loginOpen) loginOpen.addEventListener("click", () => this.openModal());
