@@ -178,20 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const transactionElement = document.createElement('tr');
             transactionElement.className = 'transaction-item py-2';
             
-            const categoryNames = {
-                'food': 'Alimentação',
-                'transport': 'Transporte',
-                'housing': 'Moradia',
-                'entertainment': 'Lazer',
-                'health': 'Saúde',
-                'education': 'Educação',
-                'other': 'Outros'
-                
-            };
-            
             transactionElement.innerHTML = `
                 <td class="py-3">${transaction.description}</td>
-                <td class="py-3">${categoryNames[transaction.category]}</td>
+                <td class="py-3">${transaction.category}</td>
                 <td class="py-3">${formatDate(transaction.date)}</td>
                 <td class="py-3 text-right font-medium ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'}">
                     ${transaction.type === 'income' ? '+' : '-'} R$ ${transaction.amount.toFixed(2)}
@@ -222,3 +211,4 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the app
     init();
 });
+
