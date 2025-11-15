@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 'health': 'Saúde',
                 'education': 'Educação',
                 'other': 'Outros'
-                'investimentos': 'investimentos'
+                'investments': 'investimentos'
             };
             
             transactionElement.innerHTML = `
@@ -222,4 +222,5 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize the app
     init();
 });
+
 
