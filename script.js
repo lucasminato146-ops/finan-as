@@ -1,5 +1,5 @@
 // script.js
-import { db, auth } from "./firebase.js"; // seu firebase.js deve exportar db e auth
+import { db, auth } from "./firebase.js"; 
 import {
   collection,
   addDoc,
@@ -11,8 +11,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  let userId = "demo"; // Para teste local sem login Firebase
+  let userId = "demo"; // Para teste local
   let transactions = [];
+  let currentFilter = "all"; // "today", "month", "all"
 
   const description = document.getElementById("description");
   const amountInput = document.getElementById("amount");
@@ -27,13 +28,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalExpenseEl = document.getElementById("total-expense");
   const totalBalanceEl = document.getElementById("total-balance");
 
-  // Inicializa data
+  const dayFilterBtn = document.getElementById("day-filter");
+  const monthFilterBtn = document.getElementById("month-filter");
+  const allFilterBtn = document.getElementById("all-filter");
+
   dateInput.valueAsDate = new Date();
 
-  // Render tabela
   function render() {
     list.innerHTML = "";
-    for (const t of transactions) {
+
+    let filtered = transactions;
+    const today = new Date();
+
+    if (currentFilter === "today") {
+      filtered = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate.toDateString() === today.toDateString();
+      });
+    } else if (currentFilter === "month") {
+      filtered = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        return tDate.getMonth() === today.getMonth() &&
+               tDate.getFullYear() === today.getFullYear();
+      });
+    }
+
+    filtered.forEach(t => {
       list.innerHTML += `
         <tr>
           <td>${t.desc}</td>
@@ -49,12 +69,12 @@ document.addEventListener("DOMContentLoaded", () => {
           </td>
         </tr>
       `;
-    }
+    });
+
     feather.replace();
     updateTotals();
   }
 
-  // Atualiza totais
   function updateTotals() {
     let income = 0, expense = 0;
     transactions.forEach(t => {
@@ -66,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     totalBalanceEl.textContent = `R$ ${(income - expense).toFixed(2)}`;
   }
 
-  // Adicionar transação (local)
   function addTransaction(type) {
     const desc = description.value.trim();
     const amount = parseFloat(amountInput.value);
@@ -78,16 +97,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const newTransaction = {
+    transactions.push({
       id: Date.now().toString(),
       desc,
       amount,
       date,
       category,
       type
-    };
-
-    transactions.push(newTransaction);
+    });
 
     description.value = "";
     amountInput.value = "";
@@ -97,15 +114,27 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   }
 
-  // Excluir transação
   window.deleteTransaction = function(id) {
     transactions = transactions.filter(t => t.id !== id);
     render();
   }
 
-  // Botões
   incomeBtn.addEventListener("click", () => addTransaction("income"));
   expenseBtn.addEventListener("click", () => addTransaction("expense"));
+
+  // Filtros
+  dayFilterBtn.addEventListener("click", () => {
+    currentFilter = "today";
+    render();
+  });
+  monthFilterBtn.addEventListener("click", () => {
+    currentFilter = "month";
+    render();
+  });
+  allFilterBtn.addEventListener("click", () => {
+    currentFilter = "all";
+    render();
+  });
 
   render();
 });
