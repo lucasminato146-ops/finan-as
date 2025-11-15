@@ -1,16 +1,13 @@
-import { db, auth } from "./firebase.js";
+import { db } from "./firebase.js"; // removi auth temporariamente para teste
 import {
     collection,
     addDoc,
     getDocs,
     deleteDoc,
-    doc,
-    query,
-    where
+    doc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    let userId = null;
     let transactions = [];
 
     // Inputs do formulário
@@ -23,20 +20,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const incomeBtn = document.getElementById("income-btn");
     const expenseBtn = document.getElementById("expense-btn");
 
+    const totalIncomeEl = document.getElementById("total-income");
+    const totalExpenseEl = document.getElementById("total-expense");
+    const totalBalanceEl = document.getElementById("total-balance");
+
     // Inicializa data como hoje
     dateInput.valueAsDate = new Date();
 
     // Carregar transações do Firestore
     async function loadTransactions() {
-        if (!userId) return;
-
         try {
-            const q = query(
-                collection(db, "transactions"),
-                where("userId", "==", userId)
-            );
-
-            const snap = await getDocs(q);
+            const snap = await getDocs(collection(db, "transactions"));
 
             transactions = snap.docs.map(doc => ({
                 id: doc.id,
@@ -44,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }));
 
             render();
+            updateTotals();
         } catch (error) {
             console.error("Erro ao carregar transações:", error);
         }
@@ -51,11 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Adicionar transação
     async function addTransaction(type) {
-        if (!userId) {
-            alert("Você precisa estar logado!");
-            return;
-        }
-
         const desc = description.value.trim();
         const amount = parseFloat(amountInput.value);
         const date = dateInput.value;
@@ -68,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             await addDoc(collection(db, "transactions"), {
-                userId,
                 desc,
                 amount,
                 category,
@@ -121,11 +110,25 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
         }
 
-        // Atualiza Feather icons
         if (window.feather) feather.replace();
     }
 
-    // Botões com preventDefault (se estiver dentro de form)
+    // Atualizar totais
+    function updateTotals() {
+        let income = 0;
+        let expense = 0;
+
+        for (const t of transactions) {
+            if (t.type === "income") income += t.amount;
+            else if (t.type === "expense") expense += t.amount;
+        }
+
+        totalIncomeEl.textContent = `R$ ${income.toFixed(2)}`;
+        totalExpenseEl.textContent = `R$ ${expense.toFixed(2)}`;
+        totalBalanceEl.textContent = `R$ ${(income - expense).toFixed(2)}`;
+    }
+
+    // Botões
     incomeBtn.addEventListener("click", (e) => {
         e.preventDefault();
         addTransaction("income");
@@ -136,15 +139,6 @@ document.addEventListener("DOMContentLoaded", () => {
         addTransaction("expense");
     });
 
-    // Observar login
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            userId = user.uid;
-            loadTransactions();
-        } else {
-            userId = null;
-            transactions = [];
-            render();
-        }
-    });
+    // Inicializa
+    loadTransactions();
 });
