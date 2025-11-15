@@ -23,23 +23,30 @@ document.addEventListener("DOMContentLoaded", () => {
     const incomeBtn = document.getElementById("income-btn");
     const expenseBtn = document.getElementById("expense-btn");
 
+    // Inicializa data como hoje
+    dateInput.valueAsDate = new Date();
+
     // Carregar transações do Firestore
     async function loadTransactions() {
         if (!userId) return;
 
-        const q = query(
-            collection(db, "transactions"),
-            where("userId", "==", userId)
-        );
+        try {
+            const q = query(
+                collection(db, "transactions"),
+                where("userId", "==", userId)
+            );
 
-        const snap = await getDocs(q);
+            const snap = await getDocs(q);
 
-        transactions = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+            transactions = snap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
 
-        render();
+            render();
+        } catch (error) {
+            console.error("Erro ao carregar transações:", error);
+        }
     }
 
     // Adicionar transação
@@ -59,28 +66,36 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        await addDoc(collection(db, "transactions"), {
-            userId,
-            desc,
-            amount,
-            category,
-            date,
-            type
-        });
+        try {
+            await addDoc(collection(db, "transactions"), {
+                userId,
+                desc,
+                amount,
+                category,
+                date,
+                type
+            });
 
-        // Limpa formulário
-        description.value = "";
-        amountInput.value = "";
-        dateInput.valueAsDate = new Date();
-        categoryInput.value = "food";
+            // Limpa formulário
+            description.value = "";
+            amountInput.value = "";
+            dateInput.valueAsDate = new Date();
+            categoryInput.value = "food";
 
-        loadTransactions();
+            loadTransactions();
+        } catch (error) {
+            console.error("Erro ao adicionar transação:", error);
+        }
     }
 
     // Excluir transação
     async function deleteTransaction(id) {
-        await deleteDoc(doc(db, "transactions", id));
-        loadTransactions();
+        try {
+            await deleteDoc(doc(db, "transactions", id));
+            loadTransactions();
+        } catch (error) {
+            console.error("Erro ao excluir transação:", error);
+        }
     }
     window.deleteTransaction = deleteTransaction; // necessário para onclick inline
 
@@ -107,15 +122,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Atualiza Feather icons
-        feather.replace();
+        if (window.feather) feather.replace();
     }
 
-    // Botões
-    incomeBtn.onclick = () => addTransaction("income");
-    expenseBtn.onclick = () => addTransaction("expense");
+    // Botões com preventDefault (se estiver dentro de form)
+    incomeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        addTransaction("income");
+    });
 
-    // Inicializa a data como hoje
-    dateInput.valueAsDate = new Date();
+    expenseBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        addTransaction("expense");
+    });
 
     // Observar login
     auth.onAuthStateChanged(user => {
