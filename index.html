@@ -1,177 +1,223 @@
-<!DOCTYPE html>
-<html lang="pt-BR" class="dark">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoinKeeper - Nova Estética</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Feather Icons -->
-    <script src="https://unpkg.com/feather-icons"></script>
-
-    <style>
-        /* Glass effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(12px);
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize transactions array from localStorage or empty array
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+    
+    // DOM elements
+    const transactionForm = document.getElementById('transaction-form');
+    const descriptionInput = document.getElementById('description');
+    const amountInput = document.getElementById('amount');
+    const dateInput = document.getElementById('date');
+    const categoryInput = document.getElementById('category');
+    const incomeBtn = document.getElementById('income-btn');
+    const expenseBtn = document.getElementById('expense-btn');
+    const transactionsList = document.getElementById('transactions-list');
+    const totalIncomeElement = document.getElementById('total-income');
+    const totalExpenseElement = document.getElementById('total-expense');
+    const totalBalanceElement = document.getElementById('total-balance');
+    const dayFilterBtn = document.getElementById('day-filter');
+    const monthFilterBtn = document.getElementById('month-filter');
+    const allFilterBtn = document.getElementById('all-filter');
+    
+    let currentFilter = 'all'; // 'day', 'month', 'all'
+    
+    // Initialize the app
+    function init() {
+        updateSummary();
+        renderTransactions();
+        setupEventListeners();
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+        incomeBtn.addEventListener('click', () => addTransaction('income'));
+        expenseBtn.addEventListener('click', () => addTransaction('expense'));
+        
+        dayFilterBtn.addEventListener('click', () => {
+            currentFilter = 'day';
+            updateActiveFilterButton();
+            renderTransactions();
+        });
+        
+        monthFilterBtn.addEventListener('click', () => {
+            currentFilter = 'month';
+            updateActiveFilterButton();
+            renderTransactions();
+        });
+        
+        allFilterBtn.addEventListener('click', () => {
+            currentFilter = 'all';
+            updateActiveFilterButton();
+            renderTransactions();
+        });
+    }
+    
+    // Update active filter button style
+    function updateActiveFilterButton() {
+        dayFilterBtn.classList.remove('bg-primary-500', 'hover:bg-primary-600');
+        dayFilterBtn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        
+        monthFilterBtn.classList.remove('bg-primary-500', 'hover:bg-primary-600');
+        monthFilterBtn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        
+        allFilterBtn.classList.remove('bg-primary-500', 'hover:bg-primary-600');
+        allFilterBtn.classList.add('bg-gray-700', 'hover:bg-gray-600');
+        
+        if (currentFilter === 'day') {
+            dayFilterBtn.classList.add('bg-primary-500', 'hover:bg-primary-600');
+            dayFilterBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+        } else if (currentFilter === 'month') {
+            monthFilterBtn.classList.add('bg-primary-500', 'hover:bg-primary-600');
+            monthFilterBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+        } else {
+            allFilterBtn.classList.add('bg-primary-500', 'hover:bg-primary-600');
+            allFilterBtn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
         }
-
-        /* Smooth fade */
-        .fade {
-            animation: fadeIn 0.6s ease;
+    }
+    
+    // Add a new transaction
+    function addTransaction(type) {
+        if (!transactionForm.checkValidity()) {
+            transactionForm.reportValidity();
+            return;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        const transaction = {
+            id: Date.now(),
+            description: descriptionInput.value,
+            amount: parseFloat(amountInput.value),
+            date: dateInput.value,
+            category: categoryInput.value,
+            type: type
+        };
+        
+        transactions.unshift(transaction);
+        updateLocalStorage();
+        updateSummary();
+        renderTransactions();
+        
+        // Reset form
+        descriptionInput.value = '';
+        amountInput.value = '';
+        dateInput.valueAsDate = new Date();
+        categoryInput.value = 'food';
+    }
+    
+    // Delete a transaction
+    function deleteTransaction(id) {
+        transactions = transactions.filter(transaction => transaction.id !== id);
+        updateLocalStorage();
+        updateSummary();
+        renderTransactions();
+    }
+    
+    // Update localStorage with current transactions
+    function updateLocalStorage() {
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+    }
+    
+    // Update summary cards
+    function updateSummary() {
+        const amounts = transactions.map(transaction => {
+            return transaction.type === 'income' ? transaction.amount : -transaction.amount;
+        });
+        
+        const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
+        const income = amounts.filter(item => item > 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
+        const expense = amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0).toFixed(2);
+        
+        totalIncomeElement.textContent = `R$ ${income}`;
+        totalExpenseElement.textContent = `R$ ${Math.abs(expense)}`;
+        totalBalanceElement.textContent = `R$ ${total}`;
+        
+        // Update balance color based on value
+        if (total > 0) {
+            totalBalanceElement.classList.remove('text-red-400');
+            totalBalanceElement.classList.add('text-green-400');
+        } else if (total < 0) {
+            totalBalanceElement.classList.remove('text-green-400');
+            totalBalanceElement.classList.add('text-red-400');
+        } else {
+            totalBalanceElement.classList.remove('text-green-400', 'text-red-400');
         }
-    </style>
-</head>
-
-<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 min-h-screen">
-
-    <!-- NAVBAR -->
-    <custom-navbar></custom-navbar>
-
-    <main class="container mx-auto px-4 py-10 fade">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            <!-- Resumo do mês -->
-            <div class="lg:col-span-1 space-y-6">
-                <div class="glass rounded-2xl p-6 shadow-xl">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold">Resumo do Mês</h2>
-                        <i data-feather="bar-chart-2" class="text-indigo-400"></i>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Ganhos</span>
-                            <span id="total-income" class="text-green-400 font-semibold">R$ 0,00</span>
-                        </div>
-
-                        <div class="flex justify-between">
-                            <span class="text-gray-400">Despesas</span>
-                            <span id="total-expense" class="text-red-400 font-semibold">R$ 0,00</span>
-                        </div>
-
-                        <div class="border-t border-gray-700 pt-3 mt-3">
-                            <div class="flex justify-between">
-                                <span class="font-medium">Saldo</span>
-                                <span id="total-balance" class="font-bold text-xl">R$ 0,00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Formulário -->
-                <div class="glass rounded-2xl p-6 shadow-xl">
-                    <h2 class="text-2xl font-bold mb-4">Adicionar Transação</h2>
-
-                    <form id="transaction-form" class="space-y-4" onsubmit="return false;">
-                        <div>
-                            <label class="block text-gray-400 mb-1">Descrição</label>
-                            <input id="description" type="text" required
-                                class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
-                        </div>
-
-                        <div>
-                            <label class="block text-gray-400 mb-1">Valor (R$)</label>
-                            <input id="amount" type="number" step="0.01" required
-                                class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-gray-400 mb-1">Data</label>
-                                <input id="date" type="date" required
-                                    class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none" />
-                            </div>
-
-                            <div>
-                                <label class="block text-gray-400 mb-1">Categoria</label>
-                                <select id="category"
-                                    class="w-full glass rounded-xl px-4 py-2 focus:ring-2 focus:ring-indigo-400 outline-none">
-                                    <option value="food">Alimentação</option>
-                                    <option value="transport">Transporte</option>
-                                    <option value="housing">Moradia</option>
-                                    <option value="entertainment">Lazer</option>
-                                    <option value="health">Saúde</option>
-                                    <option value="education">Educação</option>
-                                    <option value="sales">Vendas</option>
-                                    <option value="other">Outros</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <button id="income-btn" type="button"
-                                class="bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl transition font-semibold">
-                                <i data-feather="plus" class="inline-flex mr-1"></i> Receita
-                            </button>
-
-                            <button id="expense-btn" type="button"
-                                class="bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl transition font-semibold">
-                                <i data-feather="minus" class="inline-flex mr-1"></i> Despesa
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Lista de transações -->
-            <div class="lg:col-span-2">
-                <div class="glass rounded-2xl p-6 shadow-xl">
-
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold">Transações Recentes</h2>
-
-                        <div class="flex space-x-2">
-                            <button id="day-filter"
-                                class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm transition">Hoje</button>
-                            <button id="month-filter"
-                                class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Este
-                                Mês</button>
-                            <button id="all-filter"
-                                class="glass hover:bg-gray-700 text-white px-3 py-1 rounded-lg text-sm transition">Todas</button>
-                        </div>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead>
-                                <tr class="text-gray-400 border-b border-gray-700">
-                                    <th class="pb-3 text-left">Descrição</th>
-                                    <th class="pb-3 text-left">Categoria</th>
-                                    <th class="pb-3 text-left">Data</th>
-                                    <th class="pb-3 text-right">Valor</th>
-                                    <th class="pb-3 text-right">Ações</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="transactions-list" class="divide-y divide-gray-700"></tbody>
-                        </table>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- FOOTER -->
-    <custom-footer></custom-footer>
-
-    <!-- COMPONENTS -->
-    <script src="components/navbar.js"></script>
-    <script src="components/footer.js"></script>
-
-    <!-- SCRIPT PRINCIPAL -->
-    <script type="module" src="script.js"></script>
-
-</body>
-</html>
-
+    }
+    
+    // Render transactions list
+    function renderTransactions() {
+        // Clear current transactions
+        transactionsList.innerHTML = '';
+        
+        // Filter transactions based on current filter
+        let filteredTransactions = [...transactions];
+        
+        const today = new Date().toISOString().split('T')[0];
+        const currentMonth = new Date().toISOString().substring(0, 7);
+        
+        if (currentFilter === 'day') {
+            filteredTransactions = filteredTransactions.filter(
+                transaction => transaction.date === today
+            );
+        } else if (currentFilter === 'month') {
+            filteredTransactions = filteredTransactions.filter(
+                transaction => transaction.date.substring(0, 7) === currentMonth
+            );
+        }
+        
+        if (filteredTransactions.length === 0) {
+            transactionsList.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-4 text-center text-gray-400">
+                        Nenhuma transação encontrada
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Add filtered transactions to the list
+        filteredTransactions.forEach(transaction => {
+            const transactionElement = document.createElement('tr');
+            transactionElement.className = 'transaction-item py-2';
+            
+            const categoryNames = {
+                'food': 'Alimentação',
+                'transport': 'Transporte',
+                'housing': 'Moradia',
+                'entertainment': 'Lazer',
+                'health': 'Saúde',
+                'education': 'Educação',
+                'other': 'Outros'
+            };
+            
+            transactionElement.innerHTML = `
+                <td class="py-3">${transaction.description}</td>
+                <td class="py-3">${categoryNames[transaction.category]}</td>
+                <td class="py-3">${formatDate(transaction.date)}</td>
+                <td class="py-3 text-right font-medium ${transaction.type === 'income' ? 'text-green-400' : 'text-red-400'}">
+                    ${transaction.type === 'income' ? '+' : '-'} R$ ${transaction.amount.toFixed(2)}
+                </td>
+                <td class="py-3 text-right">
+                    <button onclick="deleteTransaction(${transaction.id})" class="text-red-400 hover:text-red-300 p-1 rounded-full transition tooltip">
+                        <i data-feather="trash-2" class="w-4 h-4"></i>
+                        <span class="tooltip-text">Excluir</span>
+                    </button>
+                </td>
+            `;
+            
+            transactionsList.appendChild(transactionElement);
+        });
+        
+        feather.replace();
+    }
+    
+    // Format date to dd/mm/yyyy
+    function formatDate(dateString) {
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+    }
+    
+    // Make deleteTransaction available globally
+    window.deleteTransaction = deleteTransaction;
+    
+    // Initialize the app
+    init();
+});
